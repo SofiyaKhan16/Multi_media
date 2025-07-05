@@ -1,22 +1,12 @@
-import { useState } from "react"
-import CloudinaryUpload from "./Components/CloudinaryUpload";
-
+import { BrowserRouter as Router } from "react-router-dom";
+import AppContent from "./components/AppContent";
 
 function App() {
-  const [value, setValue] = useState(0);
-
-  const handleIncreament=()=>{
-  setValue(value+1)
-  }
-  const handleDecreament =()=>{
-    setValue(value-1)
-  }
-
   return (
-    <>
-   <CloudinaryUpload />
-    </>
-  )
+    <Router>
+      <AppContent />
+    </Router>
+  );
 }
 
-export default App
+export default App;
