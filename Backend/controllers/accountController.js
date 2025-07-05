@@ -2,6 +2,7 @@ import BaseController from './baseController.js';
 import User from '../models/user.js';
 import { generateJwtToken } from '../utils/index.js';
 import dotenv from 'dotenv';
+import AppError from '../utils/appError.js';
 dotenv.config();
 
 const baseAccountController = new BaseController(User);
@@ -9,31 +10,25 @@ const baseAccountController = new BaseController(User);
 export const getAllAccounts = baseAccountController.getAll;
 export const getAccount = baseAccountController.getById;
 
-export const verifyGoogleToken = async (req, res) => {
+export const verifyGoogleToken = async (req, res, next) => {
     try {
         const { token } = req.params;
         
         if (!token) {
-            return res.status(400).json({ 
-                message: "ID token is required" 
-            });
+            return next(new AppError('ID token is required', 400));
         }
 
         const googleTokenInfoUrl = `${process.env.GOOGLE_TOKENINFO_URL}${token}`;
         const tokenInfoResponse = await fetch(googleTokenInfoUrl);
         
         if (!tokenInfoResponse.ok) {
-            return res.status(401).json({ 
-                message: "Invalid ID token" 
-            });
+            return next(new AppError('Invalid ID token', 401));
         }
 
         const tokenInfo = await tokenInfoResponse.json();
 
         if (!tokenInfo || !tokenInfo.email) {
-            return res.status(401).json({ 
-                message: "Token does not belong to this app" 
-            });
+            return next(new AppError('Token does not belong to this app', 401));
         }
 
         const email = tokenInfo.email;
@@ -53,10 +48,7 @@ export const verifyGoogleToken = async (req, res) => {
             try {
                 await user.save();
             } catch (error) {
-                return res.status(400).json({ 
-                    message: "Error creating user", 
-                    error: error.message 
-                });
+                return next(new AppError('Error creating user: ' + error.message, 400));
             }
         } else {
             if (profilePicture && user.profilePicture !== profilePicture) {
@@ -68,15 +60,11 @@ export const verifyGoogleToken = async (req, res) => {
         const jwtToken = generateJwtToken(user);
 
         return res.status(200).json({
-            message: "Token is valid",
+            message: 'Token is valid',
             token: jwtToken
         });
 
     } catch (error) {
-        console.error('Error verifying Google token:', error);
-        return res.status(500).json({
-            message: "Error verifying token",
-            error: error.message
-        });
+        return next(new AppError('Error verifying token: ' + error.message, 500));
     }
 };

@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import './Home.css';
 import { getAllMediaFiles } from '../../api/mediaFile';
 
 function Home() {

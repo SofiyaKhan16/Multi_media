@@ -2,31 +2,32 @@ import BaseController from './baseController.js';
 import MediaFile from '../models/mediaFile.js';
 import cloudinary from '../config/cloudinary.js';
 import fs from 'fs';
+import AppError from '../utils/appError.js';
 
 const baseMediaFileController = new BaseController(MediaFile);
 
-const createMedia = async (req, res) => {
+const createMedia = async (req, res, next) => {
   try {
-    // Check if file is present
     if (!req.file) {
-      return res.status(400).json({ error: 'No file uploaded' });
+      return next(new AppError('No file uploaded', 400));
     }
     const filePath = req.file.path;
-    // Upload to Cloudinary
-    const result = await cloudinary.uploader.upload(filePath, {
-      resource_type: 'auto',
-    });
-    // Remove local file
+    let result;
+    try {
+      result = await cloudinary.uploader.upload(filePath, {
+        resource_type: 'auto',
+      });
+    } catch (err) {
+      fs.unlinkSync(filePath);
+      return next(new AppError('Cloud upload failed: ' + err.message, 500));
+    }
     fs.unlinkSync(filePath);
-
-    // Prepare document fields
     const {
-      fileType = 'image', // fallback
+      fileType = 'image',
       tags = [],
       description = '',
       createdBy = 'system',
     } = req.body;
-
     const mediaFile = new MediaFile({
       fileName: req.file.originalname,
       fileType,
@@ -40,7 +41,7 @@ const createMedia = async (req, res) => {
     await mediaFile.save();
     res.status(201).json(mediaFile);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return next(new AppError('Error creating media: ' + error.message, 500));
   }
 };
 

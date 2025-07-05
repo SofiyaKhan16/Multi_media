@@ -1,0 +1,84 @@
+openapi: 3.0.0
+info:
+  title: Multi-Media API
+  version: 1.0.0
+  description: API documentation for the Multi-Media backend
+servers:
+  - url: http://localhost:5000
+    description: Development server
+paths:
+  /api/account:
+    get:
+      summary: Get all accounts
+      tags:
+        - Account
+      responses:
+        '200':
+          description: A list of accounts
+  /api/account/{id}:
+    get:
+      summary: Get account by ID
+      tags:
+        - Account
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Account data
+  /api/account/verify-google/{token}:
+    post:
+      summary: Verify Google token
+      tags:
+        - Account
+      parameters:
+        - in: path
+          name: token
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Verification result
+  /api/media:
+    get:
+      summary: Get all media files
+      tags:
+        - Media
+      responses:
+        '200':
+          description: A list of media files
+    post:
+      summary: Upload a media file
+      tags:
+        - Media
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Media file uploaded
+  /api/media/{id}:
+    get:
+      summary: Get media file by ID
+      tags:
+        - Media
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Media file data

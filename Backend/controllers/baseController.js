@@ -1,20 +1,20 @@
 function createBaseController(model) {
   return {
-    getAll: async (req, res) => {
+    getAll: async (req, res, next) => {
       try {
         const docs = await model.find();
         res.json(docs);
       } catch (error) {
-        res.status(500).json({ error: error.message });
+        return next(new (await import('../utils/appError.js')).default('Error fetching all: ' + error.message, 500));
       }
     },
-    getById: async (req, res) => {
+    getById: async (req, res, next) => {
       try {
         const doc = await model.findById(req.params.id);
-        if (!doc) return res.status(404).json({ error: 'Not found' });
+        if (!doc) return next(new (await import('../utils/appError.js')).default('Not found', 404));
         res.json(doc);
       } catch (error) {
-        res.status(500).json({ error: error.message });
+        return next(new (await import('../utils/appError.js')).default('Error fetching by id: ' + error.message, 500));
       }
     }
   };

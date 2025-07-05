@@ -1,7 +1,6 @@
 import { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { uploadMediaFile } from "../../api/mediaFile.js";
-import "./Upload.css";
 
 function Upload() {
   const [files, setFiles] = useState([]);
